@@ -53,7 +53,7 @@ def get_centroidized_unicode_img(testchr,font, fontsize = 16):
 #find contours of the image we place
 	imgray = cv2.cvtColor(imx,cv2.COLOR_BGR2GRAY)
 	ret,thresh = cv2.threshold(imgray,127,255,cv2.THRESH_BINARY)
-	contours,j = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+	image, contours,j = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 	im3 = cv2.drawContours(imx, contours[1:], -1, (0,255,0), 1)
 
 #calculate the centroid of all the marks making up the charcter
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 	parser.add_argument("--inputstring",type=str, help="string you would like to generate look-a-likes for, can be unicode",required=True)
 	parser.add_argument("--threshold", default=5, type=float, help="set the visual match threshold, lower is a better match")
 	parser.add_argument("--dialect", type=str, help="which unicode tableset to look to generation from (%s)" % ",".join(DIALECTS),required=True)
-	parser.add_argument("--font",default = "Arial", type=str, help="font to use, Arial,Tahoma for browsers")
+	parser.add_argument("--font",default = "fonts/tahoma.ttf", type=str, help="font to use, Arial,Tahoma for browsers")
 
 	args = parser.parse_args()
 
