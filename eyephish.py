@@ -93,7 +93,7 @@ if __name__ == "__main__":
 	parser.add_argument("--inputstring",type=str, help="string you would like to generate look-a-likes for, can be unicode",required=True)
 	parser.add_argument("--threshold", default=5, type=float, help="set the visual match threshold, lower is a better match")
 	parser.add_argument("--dialect", type=str, help="which unicode tableset to look to generation from (%s)" % ",".join(DIALECTS),required=True)
-	parser.add_argument("--font",default = "fonts/tahoma.ttf", type=str, help="font to use, Arial,Tahoma for browsers")
+	parser.add_argument("--font",default = "fonts/Arial.ttf", type=str, help="font to use, Arial,Tahoma for browsers")
 
 	args = parser.parse_args()
 
