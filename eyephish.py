@@ -88,6 +88,28 @@ def get_centroidized_unicode_img(testchr,font, fontsize = 16):
 	return numpy.array(im1)
 
 
+def create_substitution(result, word_end, substitutions):
+	# result = {word,buf_modif,score}
+	#print result
+	if word_end == "":
+		return [result]
+	else:
+		list = []
+		if word_end[0] in substitutions:
+			for i in substitutions[word_end[0]]:
+				if result != {}:
+					#print result["modif"], word_end[0], result["modif"].append(word_end[0])
+					newresult = {"word": result["word"]+i, "modif": result["modif"]+[i],"score": 0}
+				else:
+					newresult = {"word": i, "modif": [i],"score": 0}
+				list += (create_substitution(newresult,word_end[1:],substitutions))
+		if result != {}:
+			newresult = {"word": result["word"]+word_end[0], "modif": result["modif"]+[" "],"score": 0}
+		else:
+			newresult = {"word": word_end[0], "modif": [" "],"score": 0}
+		list += (create_substitution(newresult,word_end[1:],substitutions))
+	return list
+
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--inputstring",type=str, help="string you would like to generate look-a-likes for, can be unicode",required=True)
@@ -98,26 +120,29 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	newstring = []
-	stringoptions = []
+	stringoptions = {}
 
 	for i in args.inputstring:
-		im1 = get_centroidized_unicode_img(i,args.font)
-		hscores = {}
-		thistring = []
-		thistring.append(i)
-		
-		for e in xrange(DIALECTS[args.dialect][0],DIALECTS[args.dialect][1]):
-			im2 = get_centroidized_unicode_img(unichr(e),args.font)
-			hscores[unichr(e)] = homograph_score(im1, im2)
+		if i not in stringoptions:
+			im1 = get_centroidized_unicode_img(i,args.font)
+			hscores = {}
+			thistring = []
+			
+			for e in xrange(DIALECTS[args.dialect][0],DIALECTS[args.dialect][1]):
+				im2 = get_centroidized_unicode_img(unichr(e),args.font)
+				hscores[unichr(e)] = homograph_score(im1, im2)
 
-		sortedhscores = sorted(hscores.items(), key=operator.itemgetter(1))
-		for score in sortedhscores:
-			if score[1] < args.threshold:
-				thistring.append(score[0])
-			else:
-				break
+			sortedhscores = sorted(hscores.items(), key=operator.itemgetter(1))
+			for score in sortedhscores:
+				if score[1] < args.threshold:
+					thistring.append(score[0])
+				else:
+					break
+			#print thistring
+			stringoptions[i] = thistring
+	#print stringoptions
 
-		stringoptions.append(thistring)
+	print create_substitution({},args.inputstring, stringoptions)
 
 	done = 0
 	i = 0
