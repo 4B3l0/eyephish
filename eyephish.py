@@ -97,16 +97,17 @@ def create_substitution(result, word_end, substitutions):
 		list = []
 		if word_end[0] in substitutions:
 			for i in substitutions[word_end[0]]:
+				newletter = i[0]
+				newscore = i[1]
 				if result != {}:
-					#print result["modif"], word_end[0], result["modif"].append(word_end[0])
-					newresult = {"word": result["word"]+i, "modif": result["modif"]+[i],"score": 0}
+					newresult = {"word": result["word"]+newletter, "modif": result["modif"]+[newletter],"score": max(result["score"],newscore)}
 				else:
-					newresult = {"word": i, "modif": [i],"score": 0}
+					newresult = {"word": newletter, "modif": [newletter],"score": newscore}
 				list += (create_substitution(newresult,word_end[1:],substitutions))
 		if result != {}:
-			newresult = {"word": result["word"]+word_end[0], "modif": result["modif"]+[" "],"score": 0}
+			newresult = {"word": result["word"]+word_end[0], "modif": result["modif"]+[" "],"score": result["score"]}
 		else:
-			newresult = {"word": word_end[0], "modif": [" "],"score": 0}
+			newresult = {"word": word_end[0], "modif": [" "],"score": -1}
 		list += (create_substitution(newresult,word_end[1:],substitutions))
 	return list
 
@@ -135,15 +136,22 @@ if __name__ == "__main__":
 			sortedhscores = sorted(hscores.items(), key=operator.itemgetter(1))
 			for score in sortedhscores:
 				if score[1] < args.threshold:
-					thistring.append(score[0])
+					thistring.append(score)
 				else:
 					break
 			#print thistring
 			stringoptions[i] = thistring
 	#print stringoptions
 
-	print create_substitution({},args.inputstring, stringoptions)
+	newlist = create_substitution({},args.inputstring, stringoptions)
+	sorted_list = [(dict_["score"],dict_) for dict_ in newlist]
+	sorted_list.sort()
+	sorted_list = [dict_ for (key, dict_) in sorted_list] 
+	#print sorted_list
 
+	for i in sorted_list:
+		print i["word"], i["modif"]
+	"""
 	done = 0
 	i = 0
 	while done == 0:
@@ -169,3 +177,4 @@ if __name__ == "__main__":
 			done = 1
 		else:
 			print newstring, lbuff
+	"""
