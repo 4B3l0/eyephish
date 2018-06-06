@@ -123,18 +123,24 @@ if __name__ == "__main__":
 	i = 0
 	while done == 0:
 		fc = 0
+		lbuff = []
 		if i == 0:
-			lbuff = ['*']
+			newstring = '*'
 		else:
-			lbuff = ['>']
+			newstring = '>'
+		c = 0
 		for s in stringoptions:
 			try:
 				lbuff.append( s[i])
+				newstring+=s[i]
 			except:
 				fc += 1
 				lbuff.append(" ")
+				newstring+=args.inputstring[c]
+			c+=1
+		
 		i+=1
 		if fc == len(stringoptions):
 			done = 1
 		else:
-			print "".join(lbuff), lbuff[1:]
+			print newstring, lbuff
