@@ -3,6 +3,7 @@ import cv2
 import numpy
 import operator
 import argparse
+import pythonwhois
 
 ###############
 # -phar
@@ -111,19 +112,24 @@ def create_substitution(result, word_end, substitutions):
 		list += (create_substitution(newresult,word_end[1:],substitutions))
 	return list
 
+def is_domain_available(domain):
+	whois = pythonwhois.get_whois(domain)
+	return not("id" in whois)
+
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
-	parser.add_argument("--inputstring",type=str, help="string you would like to generate look-a-likes for, can be unicode",required=True)
+	parser.add_argument("--inputdomain",type=str, help="domain you would like to generate look-a-likes for, can be unicode",required=True)
 	parser.add_argument("--threshold", default=5, type=float, help="set the visual match threshold, lower is a better match")
 	parser.add_argument("--dialect", type=str, help="which unicode tableset to look to generation from (%s)" % ",".join(DIALECTS),required=True)
 	parser.add_argument("--font",default = "fonts/Arial.ttf", type=str, help="font to use, Arial,Tahoma for browsers")
-
+	parser.add_argument('--check_availability', action='store_true')
 	args = parser.parse_args()
 
 	newstring = []
 	stringoptions = {}
-
-	for i in args.inputstring:
+	shortdomain = ".".join(args.inputdomain.split(".")[0:-1])
+	tld = args.inputdomain.split(".")[-1]
+	for i in shortdomain:
 		if i not in stringoptions:
 			im1 = get_centroidized_unicode_img(i,args.font)
 			hscores = {}
@@ -139,42 +145,23 @@ if __name__ == "__main__":
 					thistring.append(score)
 				else:
 					break
-			#print thistring
 			stringoptions[i] = thistring
-	#print stringoptions
 
-	newlist = create_substitution({},args.inputstring, stringoptions)
+	newlist = create_substitution({},shortdomain, stringoptions)
+
 	sorted_list = [(dict_["score"],dict_) for dict_ in newlist]
 	sorted_list.sort()
 	sorted_list = [dict_ for (key, dict_) in sorted_list] 
-	#print sorted_list
 
-	for i in sorted_list:
-		print i["word"], i["modif"]
-	"""
-	done = 0
-	i = 0
-	while done == 0:
-		fc = 0
-		lbuff = []
-		if i == 0:
-			newstring = '*'
-		else:
-			newstring = '>'
-		c = 0
-		for s in stringoptions:
-			try:
-				lbuff.append( s[i])
-				newstring+=s[i]
-			except:
-				fc += 1
-				lbuff.append(" ")
-				newstring+=args.inputstring[c]
-			c+=1
-		
-		i+=1
-		if fc == len(stringoptions):
-			done = 1
-		else:
-			print newstring, lbuff
-	"""
+	if args.check_availability:
+		for i in sorted_list:
+			domain = i["word"]+"."+tld
+			if(is_domain_available(domain)):
+				print '\033[92mAVAILABLE\033[0m', domain, i["modif"]
+			else:
+				print '\033[91mUNAVAILABLE\033[0m', domain, i["modif"]
+	else:
+		for i in sorted_list:
+			domain = i["word"]+"."+tld
+			print domain, i["modif"]
+
